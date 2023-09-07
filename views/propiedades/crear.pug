@@ -27,3 +27,30 @@ block contenido
                             label.block.text-sm.uppercase.text-gray-500.mb-2.font-bold(for="precio") Precio
                             select#precio.w-full.px-3.py-2.border.border-gray-300.rounded-md.placeholder-gray-400(name="precio")    
                                 option(value="") - Seleccione -
+
+                    
+                    div(class="md:flex md:gap-4 space-y-5 md:space-y-0")
+
+                        div(class="md:w-1/3")
+                            label.block.text-sm.uppercase.text-gray-500.mb-2.font-bold(for="habitaciones") Habitaciones
+                            select#habitaciones.w-full.px-3.py-2.border.border-gray-300.rounded-md.placeholder-gray-400(name="habitaciones")    
+                                option(value="") - Seleccione -
+                                - var n = 1;
+                                    while n < 5
+                                        option(value=n) #{n++}
+                        
+                        div(class="md:w-1/3")
+                            label.block.text-sm.uppercase.text-gray-500.mb-2.font-bold(for="estacionamiento") Estacionamiento
+                            select#estacionamiento.w-full.px-3.py-2.border.border-gray-300.rounded-md.placeholder-gray-400(name="estacionamiento")    
+                                option(value="") - Seleccione -                                
+                                - var n = 1;
+                                    while n < 5
+                                        option(value=n) #{n++}
+
+                        div(class="md:w-1/3")
+                            label.block.text-sm.uppercase.text-gray-500.mb-2.font-bold(for="wc") WC
+                            select#wc.w-full.px-3.py-2.border.border-gray-300.rounded-md.placeholder-gray-400(name="wc")    
+                                option(value="") - Seleccione -                                
+                                - var n = 1;
+                                    while n < 5
+                                        option(value=n) #{n++}
