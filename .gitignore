@@ -16,3 +16,6 @@ npm-debug.log
 
 # Ignore VS Code configuration files (optional)
 .vscode/
+
+# Ignore images upload
+public/uploads

@@ -4,8 +4,7 @@ import { Precio, Categoria, Propiedad } from '../models/index.js'
 
 const admin = (req, res) => {
     res.render('propiedades/admin', {
-        pagina: 'Mis propiedades',
-        barra: true
+        pagina: 'Mis propiedades'        
     })
 }
 
@@ -17,8 +16,7 @@ const crear = async (req, res) => {
     ])
 
     res.render('propiedades/crear', {
-        pagina: 'Crear Propiedad',
-        barra: true, 
+        pagina: 'Crear Propiedad',        
         csrfToken: req.csrfToken(),
         categorias,
         precios,
@@ -36,8 +34,7 @@ const guardar = async (req, res) => {
       Precio.findAll(),
     ]);
     return res.render("propiedades/crear", {
-      pagina: "Crear Propiedad",
-      barra: true,
+      pagina: "Crear Propiedad",      
       csrfToken: req.csrfToken(),
       categorias,
       precios,
@@ -49,8 +46,10 @@ const guardar = async (req, res) => {
   // Crear un registro
   const {
     titulo, descripcion, habitaciones, estacionamiento,
-    wc, calle, lat, lng, categoria: categoriaId, precio: precioId
+    wc, calle, lat, lng, categoria: categoriaId, precio: precioId, 
   } = req.body;
+
+  const {id: usuarioId} = req.usuario
 
   try {
     const propiedadGuardada = await Propiedad.create({
@@ -63,17 +62,83 @@ const guardar = async (req, res) => {
         lat,
         lng,
         categoriaId,
-        precioId
+        precioId,
+        usuarioId,
+        imagen: ''
     })
+
+    const { id } = propiedadGuardada
+    res.redirect(`/propiedades/agregar-imagen/${id}`)
   } catch (error) {
     console.log(error)
   }
 
 };
 
+const agregarImagen = async (req, res) => {
+  // Validar que la propiedad exista
+  const { id } = req.params
+  const propiedad = await Propiedad.findByPk(id)
+  if (!propiedad) {
+    return res.redirect('/mis-propiedades')
+  }
+
+  // Validar que la propiedad no este publicada
+  if (propiedad.publicado) {
+    return res.redirect('/mis-propiedades')
+  }
+
+  // Validar que la propiedad pertenece a quien visita esta pagina
+  if (req.usuario.id.toString() !== propiedad.usuarioId.toString()) {
+    return res.redirect('/mis-propiedades')
+  }
+  
+
+  res.render('propiedades/agregar-imagen', {
+    pagina: `Agregar Imagen: ${propiedad.titulo}`, 
+    propiedad,
+    csrfToken: req.csrfToken()
+  })
+}
+
+const almacenarImagen = async (req, res, next) => {
+  // Validar que la propiedad exista
+  const { id } = req.params
+  const propiedad = await Propiedad.findByPk(id)
+  if (!propiedad) {
+    return res.redirect('/mis-propiedades')
+  }
+
+  // Validar que la propiedad no este publicada
+  if (propiedad.publicado) {
+    return res.redirect('/mis-propiedades')
+  }
+
+  // Validar que la propiedad pertenece a quien visita esta pagina
+  if (req.usuario.id.toString() !== propiedad.usuarioId.toString()) {
+    return res.redirect('/mis-propiedades')
+  }
+
+  try {
+    // Almacenar la imagen y publicar propiedad
+    propiedad.imagen = req.file.filename
+    propiedad.publicado = true
+
+    await propiedad.save()
+
+    next()
+
+  } catch (error) {
+    console.log(error)
+  }
+
+}
+
 
 export {
     admin,
     crear,
-    guardar
+    guardar,
+    agregarImagen,
+    almacenarImagen
 }

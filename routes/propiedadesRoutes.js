@@ -1,13 +1,15 @@
 import express from "express";
-import { admin, crear, guardar } from "../controllers/propiedadController.js";
+import { admin, crear, guardar, agregarImagen, almacenarImagen } from "../controllers/propiedadController.js";
 import { body } from "express-validator";
+import protegerRruta from '../middleware/protegerRuta.js'
+import upload from '../middleware/subirImagen.js'
 
 const router = express.Router();
 
-router.get("/mis-propiedades", admin);
-router.get("/propiedades/crear", crear);
+router.get("/mis-propiedades", protegerRruta, admin);
+router.get("/propiedades/crear", protegerRruta, crear);
 
-router.post("/propiedades/crear",
+router.post("/propiedades/crear", protegerRruta,
   body("titulo").notEmpty().withMessage("El titulo del anuncio es obligatorio"),
   body("descripcion")
     .notEmpty().withMessage("La descripcion no puede ir vacia")
@@ -20,5 +22,13 @@ router.post("/propiedades/crear",
   body('lat').notEmpty().withMessage('Ubica la propiedad en el mapa'),
   guardar
 );
+
+router.get('/propiedades/agregar-imagen/:id', protegerRruta, agregarImagen)
+
+router.post('/propiedades/agregar-imagen/:id', 
+  protegerRruta,
+  upload.single('imagen'),
+  almacenarImagen
+)
 
 export default router;
