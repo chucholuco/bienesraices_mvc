@@ -213,6 +213,33 @@ const guardarCambios = async (req, res) => {
   }
 
   // Reescribir el objeto y actualizarlo
+  try {
+    const {
+      titulo, descripcion, habitaciones, estacionamiento,
+      wc, calle, lat, lng, categoria: categoriaId, precio: precioId, 
+    } = req.body;
+  
+    propiedad.set({
+      titulo,
+      descripcion,
+      habitaciones,
+      estacionamiento,
+      wc,
+      calle,
+      lat, 
+      lng, 
+      categoriaId, 
+      precioId
+    })  
+
+    await propiedad.save()
+
+    res.redirect('/mis-propiedades')
+  
+  } catch (error) {
+    console.log(error)
+  }
+
 }
 
 
