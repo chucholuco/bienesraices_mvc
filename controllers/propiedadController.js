@@ -1,6 +1,7 @@
 import { unlink } from 'node:fs/promises'
 import { validationResult } from 'express-validator'
-import { Precio, Categoria, Propiedad } from '../models/index.js'
+import { Precio, Categoria, Propiedad, Mensaje } from '../models/index.js'
+import { esVendedor } from '../helpers/index.js'
 
 
 const admin = async (req, res) => {
@@ -291,8 +292,6 @@ const eliminar = async (req, res) => {
   // Eliminar la imagen asociada
   await unlink(`public/uploads/${propiedad.imagen}`)
 
-  console.log(`Se elimino la propiedad: ${propiedad.imagen}`)
-
   // Eliminar la propiedad
   await propiedad.destroy()
   res.redirect('/mis-propiedades')
@@ -317,7 +316,59 @@ const mostrarPropiedad = async (req, res) => {
   res.render('propiedades/mostrar', {
     propiedad,
     pagina: propiedad.titulo,
-    csrfToken: req.csrfToken()
+    csrfToken: req.csrfToken(),
+    usuario: req.usuario,
+    esVendedor: esVendedor(req.usuario?.id, propiedad.usuarioId)    
+  })
+}
+
+const enviarMensaje = async (req, res) => {
+  const { id } = req.params
+
+  // Comprobar que la propiedad exista
+  const propiedad = await Propiedad.findByPk(id, {
+    include: [
+      {model: Categoria, as: 'categoria'},
+      {model: Precio, as: 'precio'}
+    ]
+  })
+ 
+  if(!propiedad) {
+    return res.redirect('/404')
+  }
+
+  // Renderizar los errores
+  // Validacion
+  let resultado = validationResult(req);
+  if (!resultado.isEmpty()) {
+      return res.render('propiedades/mostrar', {
+        propiedad,
+        pagina: propiedad.titulo,
+        csrfToken: req.csrfToken(),
+        usuario: req.usuario,
+        esVendedor: esVendedor(req.usuario?.id, propiedad.usuarioId),
+        errores: resultado.array()
+      })
+  }
+
+  const { mensaje } = req.body
+  const { id: propiedadId } = req.params
+  const { id: usuarioId } = req.usuario
+
+  // Almacenar el mensaje
+  await Mensaje.create({
+    mensaje,
+    propiedadId,
+    usuarioId
+  })
+
+  res.render('propiedades/mostrar', {
+    propiedad,
+    pagina: propiedad.titulo,
+    csrfToken: req.csrfToken(),
+    usuario: req.usuario,
+    esVendedor: esVendedor(req.usuario?.id, propiedad.usuarioId),
+    enviado: true    
   })
 }
 
@@ -330,5 +381,6 @@ export {
     editar,
     guardarCambios,
     eliminar,
-    mostrarPropiedad
+    mostrarPropiedad,
+    enviarMensaje
 }

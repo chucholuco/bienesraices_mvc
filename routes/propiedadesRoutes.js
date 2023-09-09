@@ -1,8 +1,9 @@
 import express from "express";
-import { admin, crear, guardar, agregarImagen, almacenarImagen, editar, guardarCambios, eliminar, mostrarPropiedad } from "../controllers/propiedadController.js";
+import { admin, crear, guardar, agregarImagen, almacenarImagen, editar, guardarCambios, eliminar, mostrarPropiedad, enviarMensaje } from "../controllers/propiedadController.js";
 import { body } from "express-validator";
 import protegerRruta from '../middleware/protegerRuta.js'
 import upload from '../middleware/subirImagen.js'
+import identificarUsuario from '../middleware/identificarUsuario.js'
 
 const router = express.Router();
 
@@ -50,6 +51,13 @@ router.post("/propiedades/editar/:id", protegerRruta,
 router.post('/propiedades/eliminar/:id', protegerRruta, eliminar)
 
 // Area publica
-router.get('/propiedad/:id', mostrarPropiedad)
+router.get('/propiedad/:id', identificarUsuario, mostrarPropiedad)
+
+router.post('/propiedad/:id', 
+  identificarUsuario, 
+  body('mensaje').isLength({min:10}).withMessage("El mensaje no puede ir vacio o es muy corto"),
+  enviarMensaje)
+
+
 
 export default router;
